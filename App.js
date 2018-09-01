@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
-import { View, StyleSheet, FlatList, Text, TextInput, Button } from 'react-native';
+import { View, StyleSheet, FlatList, Text, TextInput, Button, AsyncStorage } from 'react-native';
 import { Constants } from 'expo';
+
+const itemsKey = 'devmeeting:items';
 
 export default class App extends Component {
 
@@ -8,15 +10,24 @@ export default class App extends Component {
     super(props);
     this.state = {
       value: '',
-      items: []
+      items: [],
     };
   }
 
+  componentWillMount() {
+    AsyncStorage.getItem(itemsKey).then(itemsX => {
+      let items = JSON.parse(itemsX) || [];
+      this.setState({ items })
+    });
+  }
+
   saveNote = () => {
+    let items = this.state.items.concat([{title: (new Date()).toString(), key: (new Date()).toString(), content: this.state.value}]);
     this.setState({
-      items: this.state.items.concat([{title: (new Date()).toString(), key: (new Date()).toString(), content: this.state.value}]),
-      value: ''
+      items: items,
+      value: '',
     })
+    AsyncStorage.setItem(itemsKey, JSON.stringify(items));
   }
 
   clearNotes = () => {
